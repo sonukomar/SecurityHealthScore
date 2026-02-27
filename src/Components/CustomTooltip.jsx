@@ -1,22 +1,21 @@
-import { C, font } from "../helpers";
+import { C } from "../helpers";
+import "./CustomTooltip.css";
+
 export const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   return (
     <div
+      className="custom-tooltip"
       style={{
-        background: "#0a0d1a",
-        border: `1px solid ${C.cyan}55`,
-        borderRadius: 8,
-        padding: "10px 14px",
-        fontFamily: font,
-        fontSize: 11,
-        boxShadow: "0 8px 32px rgba(0,0,0,0.7)",
+        "--tooltip-border-color": C.cyan,
+        "--tooltip-accent-color": C.cyan,
+        "--tooltip-text-hi": C.textHi,
       }}
     >
-      <p style={{ color: C.cyan, marginBottom: 6 }}>{label}</p>
+      <p className="tooltip-label">{label}</p>
       {payload.map((p, i) => (
-        <p key={i} style={{ color: p.color, margin: "2px 0" }}>
-          {p.name}: <span style={{ color: C.textHi }}>{p.value}</span>
+        <p key={i} className="tooltip-item" style={{ color: p.color }}>
+          {p.name}: <span>{p.value}</span>
         </p>
       ))}
     </div>

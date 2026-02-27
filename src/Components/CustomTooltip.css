@@ -1,0 +1,22 @@
+.custom-tooltip {
+  background: #0a0d1a;
+  border: 1px solid var(--tooltip-border-color, #00e5c4) 55;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-family: "IBM Plex Mono", "Courier New", monospace;
+  font-size: 11px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7);
+}
+.custom-tooltip p {
+  margin: 0;
+}
+.custom-tooltip .tooltip-label {
+  color: var(--tooltip-accent-color, #00e5c4);
+  margin-bottom: 6px;
+}
+.custom-tooltip .tooltip-item {
+  margin: 2px 0;
+}
+.custom-tooltip .tooltip-item span {
+  color: var(--tooltip-text-hi, #f0f4ff);
+}

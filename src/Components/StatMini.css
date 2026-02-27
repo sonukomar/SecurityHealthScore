@@ -1,0 +1,37 @@
+.stat-mini {
+  background: var(--stat-surface, #0c0f1a);
+  border: 1px solid var(--stat-border, rgba(255, 255, 255, 0.07));
+  border-radius: 12px;
+  padding: 16px 18px;
+  box-shadow: var(--stat-shadow, none);
+  position: relative;
+  overflow: hidden;
+}
+.stat-mini .icon {
+  font-size: 20px;
+  margin-bottom: 6px;
+}
+.stat-mini .value {
+  font-family: "IBM Plex Mono", "Courier New", monospace;
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--stat-accent, #00e5c4);
+}
+.stat-mini .label {
+  font-family: "DM Sans", "Segoe UI", sans-serif;
+  font-size: 12px;
+  color: var(--stat-text-mid, rgba(240, 244, 255, 0.55));
+  margin-top: 5px;
+}
+.stat-mini .glow-circle {
+  position: absolute;
+  top: -20px;
+  right: -20px;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  opacity: 0.14;
+  filter: blur(18px);
+  pointer-events: none;
+}

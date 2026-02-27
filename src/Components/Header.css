@@ -1,0 +1,49 @@
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(6, 8, 15, 0.88);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--header-border, rgba(255, 255, 255, 0.07));
+  padding: 14px 36px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.header .left-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.header .app-name {
+  font-family: "IBM Plex Mono", "Courier New", monospace;
+  font-size: 13px;
+  color: var(--header-accent, #00e5c4);
+  letter-spacing: 0.18em;
+}
+.header .sub-name {
+  font-family: "IBM Plex Mono", "Courier New", monospace;
+  font-size: 11px;
+  color: var(--header-text-lo, rgba(240, 244, 255, 0.25));
+}
+.header .status-group {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.header .status-live {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: "IBM Plex Mono", "Courier New", monospace;
+  font-size: 11px;
+  color: #4ade80;
+}
+.header .blink {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #4ade80;
+  display: inline-block;
+  box-shadow: 0 0 6px #4ade80;
+}

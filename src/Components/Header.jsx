@@ -1,6 +1,7 @@
-import { C, font } from "../helpers";
+import { C } from "../helpers";
 import { useState, useEffect } from "react";
 import { labels } from "../helpers/labels";
+import "./Header.css";
 
 export const Header = () => {
   const [time, setTime] = useState(new Date().toLocaleTimeString());
@@ -14,70 +15,24 @@ export const Header = () => {
   }, []);
   return (
     <header
+      className="header"
       style={{
-        position: "sticky",
-        top: 0,
-        zIndex: 100,
-        background: "rgba(6,8,15,0.88)",
-        backdropFilter: "blur(14px)",
-        borderBottom: `1px solid ${C.border}`,
-        padding: "14px 36px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
+        "--header-border": C.border,
+        "--header-accent": C.cyan,
+        "--header-text-lo": C.textLo,
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        <div
-          style={{
-            width: 8,
-            height: 8,
-            borderRadius: "50%",
-            background: C.cyan,
-            boxShadow: `0 0 10px ${C.cyan}`,
-            animation: "blink 2s infinite",
-          }}
-        />
-        <span
-          style={{
-            fontFamily: font,
-            fontSize: 13,
-            color: C.cyan,
-            letterSpacing: "0.18em",
-          }}
-        >
-          {labels.AppName}
-        </span>
-        <span style={{ fontFamily: font, fontSize: 11, color: C.textLo }}>
-          / {labels.AppName_Sub}
-        </span>
+      <div className="left-group">
+        <div className="blink" />
+        <span className="app-name">{labels.AppName}</span>
+        <span className="sub-name">/ {labels.AppName_Sub}</span>
       </div>
-      <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-        <span
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-            fontFamily: font,
-            fontSize: 11,
-            color: "#4ade80",
-          }}
-        >
-          <span
-            style={{
-              width: 6,
-              height: 6,
-              borderRadius: "50%",
-              background: "#4ade80",
-              display: "inline-block",
-              boxShadow: `0 0 6px #4ade80`,
-            }}
-          />
+      <div className="status-group">
+        <span className="status-live">
+          <span className="blink" />
           LIVE
         </span>
-        <span style={{ fontFamily: font, fontSize: 11, color: C.textLo }}>
-          {time}
-        </span>
+        <span style={{ color: C.textLo }}>{time}</span>
       </div>
     </header>
   );

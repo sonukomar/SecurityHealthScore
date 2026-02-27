@@ -1,17 +1,8 @@
-import { C, font } from "../helpers";
+import { C } from "../helpers";
+import "./CardTitle.css";
 
 export const CardTitle = ({ children, accent = C.cyan }) => (
-  <p
-    style={{
-      fontFamily: font,
-      fontSize: 10,
-      fontWeight: 700,
-      letterSpacing: "0.15em",
-      textTransform: "uppercase",
-      color: accent,
-      marginBottom: 18,
-    }}
-  >
+  <p className="card-title" style={{ color: accent }}>
     {children}
   </p>
 );
