@@ -48,6 +48,165 @@ import { labels } from "./helpers/labels";
 // ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
 export default function SecurityDashboard() {
   const [tab, setTab] = useState("overview");
+  const [analysisData, setAnalysisData] = useState({});
+  function convertSummaryToJson(res) {
+    try {
+      let response = res.analysis.analysis; // Start with the original response object
+      // Extract JSON from the overall_summary string
+      const summaryText = res.analysis.analysis.overall_summary;
+
+      // Find the starting index of the JSON object
+      const jsonStart = summaryText.indexOf("{");
+      const jsonEnd = summaryText.lastIndexOf("}") + 1;
+
+      if (jsonStart === -1 || jsonEnd === 0) {
+        throw new Error("No valid JSON found in overall_summary");
+      }
+
+      // Extract and parse the JSON string
+      const jsonString = summaryText.substring(jsonStart, jsonEnd);
+      const parsedJson = JSON.parse(jsonString);
+      response.overall_summary = parsedJson; // Replace the original string with the parsed JSON object
+      return response;
+    } catch (error) {
+      console.error("Error converting summary to JSON:", error);
+      return null;
+    }
+  }
+
+  useEffect(() => {
+    // Read data from report and assign to state (simulate API call)
+    const controller = new AbortController();
+    // const response = {
+    //   analysis: {
+    //     timestamp: "2026-02-27T19:31:06.896Z",
+    //     file_path: "./sample-security-data.json",
+    //     analysis: {
+    //       ips_found: 6,
+    //       unique_ips: [
+    //         "192.168.1.100",
+    //         "45.142.182.99",
+    //         "203.0.113.42",
+    //         "198.51.100.5",
+    //         "1.1.1.1",
+    //         "192.0.2.1",
+    //       ],
+    //       virustotal_analysis: {
+    //         "1.1.1.1": {
+    //           status: "analyzed",
+    //           last_analysis_stats: {
+    //             malicious: 0,
+    //             suspicious: 0,
+    //             undetected: 32,
+    //             harmless: 61,
+    //             timeout: 0,
+    //           },
+    //           country: "Unknown",
+    //           asn: 13335,
+    //           threat_level: "low",
+    //           is_vpn: false,
+    //           is_proxy: false,
+    //         },
+    //         "45.142.182.99": {
+    //           status: "analyzed",
+    //           last_analysis_stats: {
+    //             malicious: 0,
+    //             suspicious: 1,
+    //             undetected: 34,
+    //             harmless: 58,
+    //             timeout: 0,
+    //           },
+    //           country: "DE",
+    //           asn: 44592,
+    //           threat_level: "medium",
+    //           is_vpn: false,
+    //           is_proxy: false,
+    //         },
+    //         "198.51.100.5": {
+    //           status: "analyzed",
+    //           last_analysis_stats: {
+    //             malicious: 0,
+    //             suspicious: 0,
+    //             undetected: 35,
+    //             harmless: 58,
+    //             timeout: 0,
+    //           },
+    //           country: "Unknown",
+    //           asn: "Unknown",
+    //           threat_level: "low",
+    //           is_vpn: false,
+    //           is_proxy: false,
+    //         },
+    //         "203.0.113.42": {
+    //           status: "analyzed",
+    //           last_analysis_stats: {
+    //             malicious: 0,
+    //             suspicious: 0,
+    //             undetected: 35,
+    //             harmless: 58,
+    //             timeout: 0,
+    //           },
+    //           country: "Unknown",
+    //           asn: "Unknown",
+    //           threat_level: "low",
+    //           is_vpn: false,
+    //           is_proxy: false,
+    //         },
+    //         "192.168.1.100": {
+    //           status: "analyzed",
+    //           last_analysis_stats: {
+    //             malicious: 0,
+    //             suspicious: 0,
+    //             undetected: 33,
+    //             harmless: 60,
+    //             timeout: 0,
+    //           },
+    //           country: "Unknown",
+    //           asn: "Unknown",
+    //           threat_level: "low",
+    //           is_vpn: false,
+    //           is_proxy: false,
+    //         },
+    //         "192.0.2.1": {
+    //           status: "analyzed",
+    //           last_analysis_stats: {
+    //             malicious: 0,
+    //             suspicious: 0,
+    //             undetected: 34,
+    //             harmless: 59,
+    //             timeout: 0,
+    //           },
+    //           country: "Unknown",
+    //           asn: "Unknown",
+    //           threat_level: "low",
+    //           is_vpn: false,
+    //           is_proxy: false,
+    //         },
+    //       },
+    //       ip_threat_assessment:
+    //         "Here's the security assessment for each IP address:\n\n**1.1.1.1**\n\n* Threat level: Low\n* Reasoning: No malicious or suspicious activity detected in the last analysis.\n* Suspicious characteristics: None\n* Recommended action: Continue monitoring, as it is a common public DNS server.\n\n**45.142.182.99**\n\n* Threat level: Medium\n* Reasoning: 1 suspicious event (suspicious) out of a total of 75 analyzed events.\n* Suspicious characteristics: No VPN or proxy usage detected.\n* Recommended action: Monitor closely, as it may indicate potential malicious activity.\n\n**198.51.100.5**\n\n* Threat level: Low\n* Reasoning: No malicious or suspicious activity detected in the last analysis.\n* Suspicious characteristics: None\n* Recommended action: Continue monitoring, as it is an unknown IP address with no known threat history.\n\n**203.0.113.42**\n\n* Threat level: Low\n* Reasoning: No malicious or suspicious activity detected in the last analysis.\n* Suspicious characteristics: None\n* Recommended action: Continue monitoring, as it is an unknown IP address with no known threat history.\n\n**192.168.1.100**\n\n* Threat level: Low\n* Reasoning: No malicious or suspicious activity detected in the last analysis.\n* Suspicious characteristics: None\n* Recommended action: Continue monitoring, as it is a private IP address and may not be exposed to external threats.\n\n**192.0.2.1**\n\n* Threat level: Low\n* Reasoning: No malicious or suspicious activity detected in the last analysis.\n* Suspicious characteristics: None\n* Recommended action: Continue monitoring, as it is an unknown IP address with no known threat history.\n\nIn general, these results indicate that most of the IP addresses are not currently exhibiting any significant threats. However, it's essential to continue monitoring them for any changes or new suspicious activity.",
+    //       overall_summary:
+    //         'Here is the executive summary in the requested format:\n\n{\n  "timestamp": "2026-02-27T18:49:06.841Z",\n  "file_path": "./sample-security-data.json",\n  "analysis": {\n    "ips_found": 6,\n    "unique_ips": [\n      "192.168.1.100",\n      "45.142.182.99",\n      "203.0.113.42",\n      "198.51.100.5",\n      "1.1.1.1",\n      "192.0.2.1"\n    ],\n    "security_posture_assessment": {\n      "overall_score": 80,\n      "description": "Generally good security posture, with some areas for improvement."\n    },\n    "key_findings_and_risks": [\n      {\n        "risk_id": "IP_45.142.182.99",\n        "description": "Suspicious outbound connection detected from IP 192.168.1.100 to IP 45.142.182.99 on port 443 using HTTPS protocol.",\n        "risk_level": "Medium"\n      },\n      {\n        "risk_id": "MALWARE_198.51.100.5",\n        "description": "Known malware signature detected on workstation_34 with file hash 5d41402abc4b2a76b9719d911017c592.",\n        "risk_level": "Critical"\n      },\n      {\n        "risk_id": "GEO_LOCATION_ANOMALY_1.1.1.1",\n        "description": "Geo-location anomaly detected for user john.doe@corp.com with login location 1.1.1.1 and previous location 192.0.2.1.",\n        "risk_level": "Low"\n      }\n    ],\n    "priority_recommendations": [\n      {\n        "recommendation_id": "RECOMMENDATION_01",\n        "description": "Investigate the suspicious outbound connection from IP 192.168.1.100 to IP 45.142.182.99 on port 443 using HTTPS protocol.",\n        "priority": "High"\n      },\n      {\n        "recommendation_id": "RECOMMENDATION_02",\n        "description": "Scan workstation_34 for malware and ensure all software is up-to-date.",\n        "priority": "Critical"\n      },\n      {\n        "recommendation_id": "RECOMMENDATION_03",\n        "description": "Monitor user john.doe@corp.com\'s login location and previous location to prevent future geo-location anomalies.",\n        "priority": "Medium"\n      }\n    ],\n    "next_steps_for_remediation": [\n      {\n        "step_id": "STEP_01",\n        "description": "Conduct a thorough investigation into the suspicious outbound connection from IP 192.168.1.100 to IP 45.142.182.99 on port 443 using HTTPS protocol.",\n        "responsibility": "Security Team"\n      },\n      {\n        "step_id": "STEP_02",\n        "description": "Scan workstation_34 for malware and ensure all software is up-to-date.",\n        "responsibility": "IT Department"\n      },\n      {\n        "step_id": "STEP_03",\n        "description": "Monitor user john.doe@corp.com\'s login location and previous location to prevent future geo-location anomalies.",\n        "responsibility": "Security Team"\n      }\n    ]\n  }\n}',
+    //     },
+    //   },
+    // };
+    // const convertedData = convertSummaryToJson(response);
+    // console.log("Converted analysis data:", convertedData);
+    fetch("/api/analyze", { signal: controller.signal })
+      .then((res) => res.json())
+      .then((data) => {
+        const convertedData = convertSummaryToJson(data);
+        console.log("Converted analysis data:", convertedData);
+        setAnalysisData(convertedData);
+      })
+      .catch((err) => {
+        if (err.name !== "AbortError") {
+          console.error("Error fetching analysis data:", err);
+        }
+      });
+
+    return () => controller.abort(); // Cleanup: abort the fetch on unmount
+  }, []);
 
   useEffect(() => {
     const link = document.createElement("link");
@@ -95,7 +254,12 @@ export default function SecurityDashboard() {
           }}
           glow={C.cyan}
         >
-          <ThreatRing score={threatScore} />
+          <ThreatRing
+            score={
+              analysisData?.overall_summary?.analysis
+                ?.security_posture_assessment?.overall_score || threatScore
+            }
+          />
 
           <div style={{ flex: "1 1 200px" }}>
             <h1
@@ -116,9 +280,9 @@ export default function SecurityDashboard() {
                 marginBottom: 16,
               }}
             >
-              {labels.Header_Sub}{" "}
-              <strong style={{ color: C.yellow }}>{labels.Header_Sub1}</strong>{" "}
-              {labels.Header_Sub2}
+              {analysisData?.overall_summary?.analysis
+                ?.security_posture_assessment?.description ||
+                `${labels.Header_Sub} ${labels.Header_Sub1} ${labels.Header_Sub2}`}
             </p>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
               {[
@@ -855,7 +1019,66 @@ export default function SecurityDashboard() {
           </div>
         )}
       </main>
-
+      {JSON.stringify(analysisData) !== "{}" && (
+        <Card glow={C.yellow} style={{ margin: "0 36px 36px" }}>
+          <CardTitle accent={C.yellow}>Next Step For Remediation</CardTitle>
+          <pre
+            style={{
+              fontFamily: font,
+              fontSize: 11,
+              color: C.textMid,
+              maxHeight: 200,
+              overflow: "auto",
+              background: "rgba(255,255,255,0.04)",
+              padding: 12,
+              borderRadius: 8,
+            }}
+          >
+            <ul>
+              {analysisData?.overall_summary?.analysis?.next_steps_for_remediation?.map(
+                (step) => (
+                  <li key={step.step_id}>
+                    <h3>{step.description}</h3>
+                    <p style={{ fontSize: 10, color: C.textLo }}>
+                      Responsible: {step.responsibility}
+                    </p>
+                  </li>
+                ),
+              )}
+            </ul>
+          </pre>
+        </Card>
+      )}
+      {JSON.stringify(analysisData) !== "{}" && (
+        <Card glow={C.yellow} style={{ margin: "0 36px 36px" }}>
+          <CardTitle accent={C.yellow}>Priority Recommendations</CardTitle>
+          <pre
+            style={{
+              fontFamily: font,
+              fontSize: 11,
+              color: C.textMid,
+              maxHeight: 200,
+              overflow: "auto",
+              background: "rgba(255,255,255,0.04)",
+              padding: 12,
+              borderRadius: 8,
+            }}
+          >
+            <ul>
+              {analysisData?.overall_summary?.analysis?.priority_recommendations?.map(
+                (step) => (
+                  <li key={step.recommendation_id}>
+                    <h3>{step.description}</h3>
+                    <p style={{ fontSize: 10, color: C.textLo }}>
+                      Priority: {step.priority}
+                    </p>
+                  </li>
+                ),
+              )}
+            </ul>
+          </pre>
+        </Card>
+      )}
       <Footer />
     </div>
   );

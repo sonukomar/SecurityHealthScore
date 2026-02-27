@@ -1,0 +1,33 @@
+{
+  "scan_id": "security_scan_2024_02_27",
+  "timestamp": "2024-02-27T10:30:00Z",
+  "organization": "Acme Security Corp",
+  "alerts": [
+    {
+      "id": "alert_001",
+      "severity": "high",
+      "description": "Suspicious outbound connection detected",
+      "source_ip": "192.168.1.100",
+      "destination_ip": "45.142.182.99",
+      "port": 443,
+      "protocol": "HTTPS",
+      "timestamp": "2024-02-27T10:15:00Z"
+    },
+    {
+      "id": "alert_002",
+      "severity": "medium",
+      "description": "Multiple failed authentication attempts",
+      "source_ip": "203.0.113.42",
+      "target_system": "mail.internal.corp",
+      "attempt_count": 15,
+      "timestamp": "2024-02-27T09:45:00Z"
+    }
+  ],
+  "security_metrics": {
+    "total_alerts": 4,
+    "critical_count": 1,
+    "high_count": 1,
+    "medium_count": 1,
+    "low_count": 1
+  }
+}
