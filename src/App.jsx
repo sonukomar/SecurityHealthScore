@@ -45,10 +45,26 @@ import { Footer } from "./Components/Footer";
 import { Header } from "./Components/Header";
 import { labels } from "./helpers/labels";
 
+const eventSource = new EventSource("http://localhost:3000/events");
+
+eventSource.addEventListener("reload", () => {
+  console.log("Server requested reload via SSE. Reloading page...");
+  [location.reload()]();
+});
+
 // ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
 export default function SecurityDashboard() {
   const [tab, setTab] = useState("overview");
   const [analysisData, setAnalysisData] = useState({});
+
+  function parseMarkdown(md) {
+    return md
+      .replace(/^## (.*$)/gim, '<div class="section-title">$1</div>')
+      .replace(/^\- (.*$)/gim, '<div class="bullet">• $1</div>')
+      .replace(/\*\*(.*)\*\*/gim, "<strong>$1</strong>")
+      .replace(/\n/g, "<br>");
+  }
+
   function convertSummaryToJson(res) {
     try {
       let response = res.analysis.analysis; // Start with the original response object
@@ -77,122 +93,91 @@ export default function SecurityDashboard() {
   useEffect(() => {
     // Read data from report and assign to state (simulate API call)
     const controller = new AbortController();
-    // const response = {
-    //   analysis: {
-    //     timestamp: "2026-02-27T19:31:06.896Z",
-    //     file_path: "./sample-security-data.json",
-    //     analysis: {
-    //       ips_found: 6,
-    //       unique_ips: [
-    //         "192.168.1.100",
-    //         "45.142.182.99",
-    //         "203.0.113.42",
-    //         "198.51.100.5",
-    //         "1.1.1.1",
-    //         "192.0.2.1",
-    //       ],
-    //       virustotal_analysis: {
-    //         "1.1.1.1": {
-    //           status: "analyzed",
-    //           last_analysis_stats: {
-    //             malicious: 0,
-    //             suspicious: 0,
-    //             undetected: 32,
-    //             harmless: 61,
-    //             timeout: 0,
-    //           },
-    //           country: "Unknown",
-    //           asn: 13335,
-    //           threat_level: "low",
-    //           is_vpn: false,
-    //           is_proxy: false,
-    //         },
-    //         "45.142.182.99": {
-    //           status: "analyzed",
-    //           last_analysis_stats: {
-    //             malicious: 0,
-    //             suspicious: 1,
-    //             undetected: 34,
-    //             harmless: 58,
-    //             timeout: 0,
-    //           },
-    //           country: "DE",
-    //           asn: 44592,
-    //           threat_level: "medium",
-    //           is_vpn: false,
-    //           is_proxy: false,
-    //         },
-    //         "198.51.100.5": {
-    //           status: "analyzed",
-    //           last_analysis_stats: {
-    //             malicious: 0,
-    //             suspicious: 0,
-    //             undetected: 35,
-    //             harmless: 58,
-    //             timeout: 0,
-    //           },
-    //           country: "Unknown",
-    //           asn: "Unknown",
-    //           threat_level: "low",
-    //           is_vpn: false,
-    //           is_proxy: false,
-    //         },
-    //         "203.0.113.42": {
-    //           status: "analyzed",
-    //           last_analysis_stats: {
-    //             malicious: 0,
-    //             suspicious: 0,
-    //             undetected: 35,
-    //             harmless: 58,
-    //             timeout: 0,
-    //           },
-    //           country: "Unknown",
-    //           asn: "Unknown",
-    //           threat_level: "low",
-    //           is_vpn: false,
-    //           is_proxy: false,
-    //         },
-    //         "192.168.1.100": {
-    //           status: "analyzed",
-    //           last_analysis_stats: {
-    //             malicious: 0,
-    //             suspicious: 0,
-    //             undetected: 33,
-    //             harmless: 60,
-    //             timeout: 0,
-    //           },
-    //           country: "Unknown",
-    //           asn: "Unknown",
-    //           threat_level: "low",
-    //           is_vpn: false,
-    //           is_proxy: false,
-    //         },
-    //         "192.0.2.1": {
-    //           status: "analyzed",
-    //           last_analysis_stats: {
-    //             malicious: 0,
-    //             suspicious: 0,
-    //             undetected: 34,
-    //             harmless: 59,
-    //             timeout: 0,
-    //           },
-    //           country: "Unknown",
-    //           asn: "Unknown",
-    //           threat_level: "low",
-    //           is_vpn: false,
-    //           is_proxy: false,
-    //         },
-    //       },
-    //       ip_threat_assessment:
-    //         "Here's the security assessment for each IP address:\n\n**1.1.1.1**\n\n* Threat level: Low\n* Reasoning: No malicious or suspicious activity detected in the last analysis.\n* Suspicious characteristics: None\n* Recommended action: Continue monitoring, as it is a common public DNS server.\n\n**45.142.182.99**\n\n* Threat level: Medium\n* Reasoning: 1 suspicious event (suspicious) out of a total of 75 analyzed events.\n* Suspicious characteristics: No VPN or proxy usage detected.\n* Recommended action: Monitor closely, as it may indicate potential malicious activity.\n\n**198.51.100.5**\n\n* Threat level: Low\n* Reasoning: No malicious or suspicious activity detected in the last analysis.\n* Suspicious characteristics: None\n* Recommended action: Continue monitoring, as it is an unknown IP address with no known threat history.\n\n**203.0.113.42**\n\n* Threat level: Low\n* Reasoning: No malicious or suspicious activity detected in the last analysis.\n* Suspicious characteristics: None\n* Recommended action: Continue monitoring, as it is an unknown IP address with no known threat history.\n\n**192.168.1.100**\n\n* Threat level: Low\n* Reasoning: No malicious or suspicious activity detected in the last analysis.\n* Suspicious characteristics: None\n* Recommended action: Continue monitoring, as it is a private IP address and may not be exposed to external threats.\n\n**192.0.2.1**\n\n* Threat level: Low\n* Reasoning: No malicious or suspicious activity detected in the last analysis.\n* Suspicious characteristics: None\n* Recommended action: Continue monitoring, as it is an unknown IP address with no known threat history.\n\nIn general, these results indicate that most of the IP addresses are not currently exhibiting any significant threats. However, it's essential to continue monitoring them for any changes or new suspicious activity.",
-    //       overall_summary:
-    //         'Here is the executive summary in the requested format:\n\n{\n  "timestamp": "2026-02-27T18:49:06.841Z",\n  "file_path": "./sample-security-data.json",\n  "analysis": {\n    "ips_found": 6,\n    "unique_ips": [\n      "192.168.1.100",\n      "45.142.182.99",\n      "203.0.113.42",\n      "198.51.100.5",\n      "1.1.1.1",\n      "192.0.2.1"\n    ],\n    "security_posture_assessment": {\n      "overall_score": 80,\n      "description": "Generally good security posture, with some areas for improvement."\n    },\n    "key_findings_and_risks": [\n      {\n        "risk_id": "IP_45.142.182.99",\n        "description": "Suspicious outbound connection detected from IP 192.168.1.100 to IP 45.142.182.99 on port 443 using HTTPS protocol.",\n        "risk_level": "Medium"\n      },\n      {\n        "risk_id": "MALWARE_198.51.100.5",\n        "description": "Known malware signature detected on workstation_34 with file hash 5d41402abc4b2a76b9719d911017c592.",\n        "risk_level": "Critical"\n      },\n      {\n        "risk_id": "GEO_LOCATION_ANOMALY_1.1.1.1",\n        "description": "Geo-location anomaly detected for user john.doe@corp.com with login location 1.1.1.1 and previous location 192.0.2.1.",\n        "risk_level": "Low"\n      }\n    ],\n    "priority_recommendations": [\n      {\n        "recommendation_id": "RECOMMENDATION_01",\n        "description": "Investigate the suspicious outbound connection from IP 192.168.1.100 to IP 45.142.182.99 on port 443 using HTTPS protocol.",\n        "priority": "High"\n      },\n      {\n        "recommendation_id": "RECOMMENDATION_02",\n        "description": "Scan workstation_34 for malware and ensure all software is up-to-date.",\n        "priority": "Critical"\n      },\n      {\n        "recommendation_id": "RECOMMENDATION_03",\n        "description": "Monitor user john.doe@corp.com\'s login location and previous location to prevent future geo-location anomalies.",\n        "priority": "Medium"\n      }\n    ],\n    "next_steps_for_remediation": [\n      {\n        "step_id": "STEP_01",\n        "description": "Conduct a thorough investigation into the suspicious outbound connection from IP 192.168.1.100 to IP 45.142.182.99 on port 443 using HTTPS protocol.",\n        "responsibility": "Security Team"\n      },\n      {\n        "step_id": "STEP_02",\n        "description": "Scan workstation_34 for malware and ensure all software is up-to-date.",\n        "responsibility": "IT Department"\n      },\n      {\n        "step_id": "STEP_03",\n        "description": "Monitor user john.doe@corp.com\'s login location and previous location to prevent future geo-location anomalies.",\n        "responsibility": "Security Team"\n      }\n    ]\n  }\n}',
-    //     },
-    //   },
-    // };
-    // const convertedData = convertSummaryToJson(response);
-    // console.log("Converted analysis data:", convertedData);
-    fetch("/api/analyze", { signal: controller.signal })
+    const response = {
+      analysis: {
+        timestamp: "2026-02-28T08:24:23.690Z",
+        file_path: "./data-for-analysis.json",
+        analysis: {
+          ips_found: 4,
+          unique_ips: [
+            "104.18.12.37",
+            "13.232.249.136",
+            "160.79.104.10",
+            "142.251.222.164",
+          ],
+          virustotal_analysis: {
+            "104.18.12.37": {
+              status: "analyzed",
+              last_analysis_stats: {
+                malicious: 0,
+                suspicious: 0,
+                undetected: 32,
+                harmless: 61,
+                timeout: 0,
+              },
+              country: "Unknown",
+              asn: 13335,
+              threat_level: "low",
+              is_vpn: false,
+              is_proxy: false,
+            },
+            "13.232.249.136": {
+              status: "analyzed",
+              last_analysis_stats: {
+                malicious: 0,
+                suspicious: 0,
+                undetected: 93,
+                harmless: 0,
+                timeout: 0,
+              },
+              country: "IN",
+              asn: 16509,
+              threat_level: "low",
+              is_vpn: false,
+              is_proxy: false,
+            },
+            "160.79.104.10": {
+              status: "analyzed",
+              last_analysis_stats: {
+                malicious: 1,
+                suspicious: 0,
+                undetected: 33,
+                harmless: 59,
+                timeout: 0,
+              },
+              country: "US",
+              asn: 399358,
+              threat_level: "critical",
+              is_vpn: false,
+              is_proxy: false,
+            },
+            "142.251.222.164": {
+              status: "analyzed",
+              last_analysis_stats: {
+                malicious: 0,
+                suspicious: 0,
+                undetected: 33,
+                harmless: 60,
+                timeout: 0,
+              },
+              country: "US",
+              asn: 15169,
+              threat_level: "low",
+              is_vpn: false,
+              is_proxy: false,
+            },
+          },
+          ip_threat_assessment:
+            'Here\'s the security assessment for each IP address:\n\n**IP Address: 104.18.12.37**\n\n* Threat Level: Low\n* Reasoning: The IP has been analyzed and found to be harmless with a high percentage of "harmless" results (61%). It also lacks any suspicious characteristics, such as VPN or proxy usage.\n* Recommended Actions: Continue monitoring the IP for any changes in behavior.\n\n**IP Address: 13.232.249.136**\n\n* Threat Level: Low\n* Reasoning: The IP has been analyzed and found to be harmless with a high percentage of "harmless" results (0%). However, it is located in India (IN), which may indicate potential risks related to data localization or censorship laws.\n* Recommended Actions: Consider implementing additional security measures, such as encryption, when communicating with servers or services hosted in India.\n\n**IP Address: 160.79.104.10**\n\n* Threat Level: Critical\n* Reasoning: The IP has been analyzed and found to be malicious (1%) due to its high threat level and suspicious behavior. This IP is located in the United States (US), which may indicate a potential insider threat or malicious actor.\n* Recommended Actions:\n\t+ Immediately block this IP address from accessing any sensitive resources.\n\t+ Conduct a thorough investigation into the source of the malicious traffic.\n\t+ Implement additional security measures to prevent similar incidents in the future.\n\n**IP Address: 142.251.222.164**\n\n* Threat Level: Low\n* Reasoning: The IP has been analyzed and found to be harmless with a high percentage of "harmless" results (60%). It also lacks any suspicious characteristics, such as VPN or proxy usage.\n* Recommended Actions: Continue monitoring the IP for any changes in behavior.\n\nIn summary, IP address 160.79.104.10 poses a significant security risk due to its malicious activity, while the other IPs appear to be harmless.',
+          overall_summary:
+            'Here is the output in the requested format:\n\n```\n{\n  "analysis": {\n    "security_posture_assessment": {\n      "overall_score": 80,\n      "description": "The organization has a generally good security posture, with some areas for improvement."\n    },\n    "key_findings_and_risks": [\n      {\n        "risk_id": "IP_45.142.182.99",\n        "description": "Suspicious outbound connection detected from IP 192.168.1.100 to IP 45.142.182.99 on port 443 using HTTPS protocol.",\n        "risk_level": "Medium"\n      },\n      {\n        "risk_id": "MALWARE_198.51.100.5",\n        "description": "Known malware signature detected on workstation_34 with file hash 5d41402abc4b2a76b9719d911017c592.",\n        "risk_level": "Critical"\n      },\n      {\n        "risk_id": "GEO_LOCATION_ANOMALY_1.1.1.1",\n        "description": "Geo-location anomaly detected for user john.doe@corp.com with login location 1.1.1.1 and previous location 192.0.2.1.",\n        "risk_level": "Low"\n      }\n    ],\n    "priority_recommendations": [\n      {\n        "recommendation_id": "RECOMMENDATION_01",\n        "description": "Investigate the suspicious outbound connection from IP 192.168.1.100 to IP 45.142.182.99 on port 443 using HTTPS protocol.",\n        "priority": "High"\n      },\n      {\n        "recommendation_id": "RECOMMENDATION_02",\n        "description": "Scan workstation_34 for malware and ensure all software is up-to-date.",\n        "priority": "Critical"\n      },\n      {\n        "recommendation_id": "RECOMMENDATION_03",\n        "description": "Monitor user john.doe@corp.com\'s login location and previous location to prevent future geo-location anomalies.",\n        "priority": "Medium"\n      }\n    ],\n    "next_steps_for_remediation": [\n      {\n        "step_id": "STEP_01",\n        "description": "Conduct a thorough investigation into the suspicious outbound connection from IP 192.168.1.100 to IP 45.142.182.99 on port 443 using HTTPS protocol.",\n        "responsibility": "Security Team"\n      },\n      {\n        "step_id": "STEP_02",\n        "description": "Scan workstation_34 for malware and ensure all software is up-to-date.",\n        "responsibility": "IT Department"\n      },\n      {\n        "step_id": "STEP_03",\n        "description": "Monitor user john.doe@corp.com\'s login location and previous location to prevent future geo-location anomalies.",\n        "responsibility": "Security Team"\n      }\n    ]\n  }\n}\n```\n\n**Overall Security Posture Assessment:**\nThe organization has a generally good security posture, with some areas for improvement. The overall score is 80.\n\n**Key Findings and Risks:**\n\n1. **IP_45.142.182.99**: Suspicious outbound connection detected from IP 192.168.1.100 to IP 45.142.182.99 on port 443 using HTTPS protocol.\n\t* Risk Level: Medium\n2. **MALWARE_198.51.100.5**: Known malware signature detected on workstation_34 with file hash 5d41402abc4b2a76b9719d911017c592.\n\t* Risk Level: Critical\n3. **GEO_LOCATION_ANOMALY_1.1.1.1**: Geo-location anomaly detected for user john.doe@corp.com with login location 1.1.1.1 and previous location 192.0.2.1.\n\t* Risk Level: Low\n\n**Priority Recommendations:**\n\n1. **RECOMMENDATION_01**: Investigate the suspicious outbound connection from IP 192.168.1.100 to IP 45.142.182.99 on port 443 using HTTPS protocol.\n\t* Priority: High\n2. **RECOMMENDATION_02**: Scan workstation_34 for malware and ensure all software is up-to-date.\n\t* Priority: Critical\n3. **RECOMMENDATION_03**: Monitor user john.doe@corp.com\'s login location and previous location to prevent future geo-location anomalies.\n\t* Priority: Medium\n\n**Next Steps for Remediation:**\n\n1. **STEP_01**: Conduct a thorough investigation into the suspicious outbound connection from IP 192.168.1.100 to IP 45.142.182.99 on port 443 using HTTPS protocol.\n\t* Responsibility: Security Team\n2. **STEP_02**: Scan workstation_34 for malware and ensure all software is up-to-date.\n\t* Responsibility: IT Department\n3. **STEP_03**: Monitor user john.doe@corp.com\'s login location and previous location to prevent future geo-location anomalies.\n\t* Responsibility: Security Team',
+        },
+      },
+    };
+    const convertedData = convertSummaryToJson(response);
+    console.log("Converted analysis data:", convertedData);
+    setAnalysisData(convertedData);
+    fetch("/api/analyzes", { signal: controller.signal })
       .then((res) => res.json())
       .then((data) => {
         const convertedData = convertSummaryToJson(data);
@@ -1021,10 +1006,34 @@ export default function SecurityDashboard() {
       </main>
       {JSON.stringify(analysisData) !== "{}" && (
         <Card glow={C.yellow} style={{ margin: "0 36px 36px" }}>
+          <CardTitle accent={C.yellow}>Security Assesment</CardTitle>
+          <pre
+            style={{
+              fontFamily: fontSans,
+              fontSize: 11,
+              color: C.textMid,
+
+              overflow: "auto",
+              background: "rgba(255,255,255,0.04)",
+              padding: 12,
+              borderRadius: 8,
+            }}
+          >
+            <div
+              dangerouslySetInnerHTML={{
+                __html: parseMarkdown(analysisData?.ip_threat_assessment),
+              }}
+            />
+          </pre>
+        </Card>
+      )}
+
+      {JSON.stringify(analysisData) !== "{}" && (
+        <Card glow={C.yellow} style={{ margin: "0 36px 36px" }}>
           <CardTitle accent={C.yellow}>Next Step For Remediation</CardTitle>
           <pre
             style={{
-              fontFamily: font,
+              fontFamily: fontSans,
               fontSize: 11,
               color: C.textMid,
               maxHeight: 200,
@@ -1038,8 +1047,14 @@ export default function SecurityDashboard() {
               {analysisData?.overall_summary?.analysis?.next_steps_for_remediation?.map(
                 (step) => (
                   <li key={step.step_id}>
-                    <h3>{step.description}</h3>
-                    <p style={{ fontSize: 10, color: C.textLo }}>
+                    <h3 style={{ fontFamily: fontSans }}>{step.description}</h3>
+                    <p
+                      style={{
+                        fontSize: 10,
+                        color: C.textLo,
+                        fontFamily: fontSans,
+                      }}
+                    >
                       Responsible: {step.responsibility}
                     </p>
                   </li>
@@ -1054,7 +1069,7 @@ export default function SecurityDashboard() {
           <CardTitle accent={C.yellow}>Priority Recommendations</CardTitle>
           <pre
             style={{
-              fontFamily: font,
+              fontFamily: fontSans,
               fontSize: 11,
               color: C.textMid,
               maxHeight: 200,
@@ -1068,8 +1083,14 @@ export default function SecurityDashboard() {
               {analysisData?.overall_summary?.analysis?.priority_recommendations?.map(
                 (step) => (
                   <li key={step.recommendation_id}>
-                    <h3>{step.description}</h3>
-                    <p style={{ fontSize: 10, color: C.textLo }}>
+                    <h3 style={{ fontFamily: fontSans }}>{step.description}</h3>
+                    <p
+                      style={{
+                        fontSize: 10,
+                        color: C.textLo,
+                        fontFamily: fontSans,
+                      }}
+                    >
                       Priority: {step.priority}
                     </p>
                   </li>
@@ -1079,6 +1100,7 @@ export default function SecurityDashboard() {
           </pre>
         </Card>
       )}
+
       <Footer />
     </div>
   );

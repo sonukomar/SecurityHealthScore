@@ -166,10 +166,6 @@ function extractIpsFromData(data) {
  */
 export async function analyzeSecurityFile(filePath, options = {}) {
   console.log(`\n🔐 Starting security analysis for file: ${filePath}`);
-  console.log(options);
-  console.log(
-    `Using LLM: ${options.model || modelName} at ${options.ollamaBaseUrl || ollamaBaseUrl}`,
-  );
   const { ollamaBaseUrl, model, virusTotalApiKey } = options;
 
   console.log(`\n📂 Reading security file: ${filePath}`);
